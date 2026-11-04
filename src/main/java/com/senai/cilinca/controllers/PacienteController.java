@@ -48,4 +48,14 @@ public class PacienteController {
             return ResponseEntity.badRequest().body("Nao encontrado");
         }
     }
+
+    //http://localhost:8080/paciente/{email}
+    @DeleteMapping("/{email}")
+    public ResponseEntity<String> deletarUsuario(@PathVariable String email){
+        //chamar o service
+        if (service.deletarPaciente(email)){
+            return ResponseEntity.ok().body("Sucesso");
+        }
+        return ResponseEntity.badRequest().body("Fracasso");
+    }
 }

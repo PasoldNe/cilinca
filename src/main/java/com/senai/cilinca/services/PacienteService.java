@@ -26,11 +26,11 @@ public class PacienteService {
         List<PacienteEntity> lista = repository.findAll();
 
 
-        if (entrada.getNome()=="" || entrada.getEmail()==""){
-            return "dadosInvalido";
+        if (entrada.getNome().equals("") || entrada.getEmail().equals("")){
+            return "dadosInvalidos";
         }
         for (PacienteEntity paciente : lista){
-            if(paciente.getEmail() == entrada.getEmail()){
+            if(paciente.getEmail().equals(entrada.getEmail())){
                 return "emailCadastrado";
             }
         }
@@ -69,7 +69,14 @@ public class PacienteService {
         List<PacienteEntity> listaEntity = repository.findAll();
 
         for (PacienteEntity paciente : listaEntity){
-            if (email == paciente.getEmail()){
+            if(paciente.getEmail().equals(entrada.getEmail())){
+                return false;
+
+            }
+        }
+
+        for (PacienteEntity paciente : listaEntity){
+            if (paciente.getEmail().equals(email)){
                 paciente.setNome(entrada.getNome());
                 paciente.setEmail(entrada.getEmail());
                 repository.save(paciente);
@@ -77,7 +84,19 @@ public class PacienteService {
             }
         }
         return false;
+    }
 
+    //true - DELETADO    false - NAO deletado
+    public Boolean deletarPaciente(String email){
+        List<PacienteEntity> listaEntity = repository.findAll();
+
+        for (PacienteEntity paciente : listaEntity){
+            if (paciente.getEmail().equals(email)){
+                repository.delete(paciente);
+                return true;
+            }
+        }
+        return false;
     }
 
 }
