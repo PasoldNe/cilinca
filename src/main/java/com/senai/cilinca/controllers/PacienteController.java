@@ -36,7 +36,8 @@ public class PacienteController {
     //http://localhost:8080/paciente
     @GetMapping
     public ResponseEntity<List<PacienteDto>> listarPaciente(){
-        return ResponseEntity.ok().body(service.listarPaciente());
+        List<PacienteDto> lista = service.listarPaciente();
+        return ResponseEntity.ok().body(lista);
     }
 
     //http://localhost:8080/paciente/[email]
