@@ -1,16 +1,16 @@
 package com.senai.cilinca.dtos;
 
-import com.senai.cilinca.models.PacienteEntity;
-
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 public class ConsultaDto {
 
     private Long id;
     private String titulo;
-    private Timestamp data;
+    private LocalDate data;
+    private LocalTime hora;
     private String status;
-    private PacienteEntity pacienteId;
+    private Long pacienteId;
 
     public ConsultaDto() {
     }
@@ -31,12 +31,20 @@ public class ConsultaDto {
         this.titulo = titulo;
     }
 
-    public Timestamp getData() {
+    public LocalDate getData() {
         return data;
     }
 
-    public void setData(Timestamp data) {
+    public void setData(LocalDate data) {
         this.data = data;
+    }
+
+    public LocalTime getHora() {
+        return hora;
+    }
+
+    public void setHora(LocalTime hora) {
+        this.hora = hora;
     }
 
     public String getStatus() {
@@ -47,11 +55,11 @@ public class ConsultaDto {
         this.status = status;
     }
 
-    public PacienteEntity getPacienteId() {
+    public Long getPacienteId() {
         return pacienteId;
     }
 
-    public void setPacienteId(PacienteEntity pacienteId) {
+    public void setPacienteId(Long pacienteId) {
         this.pacienteId = pacienteId;
     }
 }

@@ -2,7 +2,6 @@ package com.senai.cilinca.services;
 
 import com.senai.cilinca.dtos.ConsultaDto;
 import com.senai.cilinca.dtos.ConsultaEntradaDto;
-import com.senai.cilinca.dtos.PacienteDto;
 import com.senai.cilinca.models.ConsultaEntity;
 import com.senai.cilinca.models.PacienteEntity;
 import com.senai.cilinca.repositories.ConsultaRepository;
@@ -23,50 +22,64 @@ public class ConsultaService {
         this.pacienteRepository = pacienteRepository;
     }
 
-    //- procurar paciente  FINDBYID
-    //- cadastrar consulta vinculada a um paciente
-    //- atualizar consultas
-    //TODO - deletar consultas
-
-    //ele ira procurar e validar se ele existe
-    public Boolean validadorDePaciente(Long pacienteId){
-        Optional<PacienteEntity> pacienteOP = pacienteRepository.findById(pacienteId);
-        if (pacienteOP.isPresent()){
+    private Boolean dadosInvalidos(ConsultaEntradaDto entrada){
+        String titulo = entrada.getTitulo();
+        if (titulo == null || titulo.isBlank() || entrada.getData() == null || entrada.getHora() == null
+                || entrada.getPacienteId() == null){
             return true;
-        }else {
-            return false;
         }
+
+        String status = entrada.getStatus();
+        return !("AGENDADA".equals(status) || "EM_ANDAMENTO".equals(status)
+                || "CONCLUIDA".equals(status) || "CANCELADA".equals(status));
     }
 
-    //true - SUCESSO    false - ERRO
-    public Boolean cadastrarConsulta(ConsultaEntradaDto entrada){
-        ConsultaEntity entity = new ConsultaEntity();
+    public String cadastrarConsulta(ConsultaEntradaDto entrada){
+        if (dadosInvalidos(entrada)){
+            return "dadosInvalidos";
+        }
 
+        Optional<PacienteEntity> pacienteOP = pacienteRepository.findById(entrada.getPacienteId());
+        if (!pacienteOP.isPresent()){
+            return "pacienteNaoEncontrado";
+        }
+
+        //TODO - validar conflito de consultas ativas no mesmo minuto
+        ConsultaEntity entity = new ConsultaEntity();
         entity.setData(entrada.getData());
-        entity.setPacienteId(entrada.getPacienteId());
+        entity.setHora(entrada.getHora());
+        entity.setPacienteId(pacienteOP.get());
         entity.setStatus(entrada.getStatus());
         entity.setTitulo(entrada.getTitulo());
         repository.save(entity);
 
-        return true;
+        return "Sucesso";
     }
 
-    //atualizar com todos os dados novos a partir de um titulo existente
-    //true - ATUALIZADO    false - NAO atualizado
-    public Boolean atualizarConsulta(ConsultaDto entrada, Long id){
-        List<ConsultaEntity> listaConsulta = repository.findAll();
-
-        for (ConsultaEntity consulta : listaConsulta){
-            if (id == entrada.getId()){
-                consulta.setTitulo(entrada.getTitulo());
-                consulta.setData(entrada.getData());
-                consulta.setStatus(entrada.getStatus());
-                consulta.setPacienteId(entrada.getPacienteId());
-                repository.save(consulta);
-                return true;
-            }
+    public String atualizarConsulta(ConsultaEntradaDto entrada, Long id){
+        if (dadosInvalidos(entrada)){
+            return "dadosInvalidos";
         }
-        return false;
+
+        Optional<ConsultaEntity> consultaOP = repository.findById(id);
+        if (!consultaOP.isPresent()){
+            return "consultaNaoEncontrada";
+        }
+
+        Optional<PacienteEntity> pacienteOP = pacienteRepository.findById(entrada.getPacienteId());
+        if (!pacienteOP.isPresent()){
+            return "pacienteNaoEncontrado";
+        }
+
+        //TODO - validar conflito sem comparar a consulta com ela mesma
+        ConsultaEntity consulta = consultaOP.get();
+        consulta.setTitulo(entrada.getTitulo());
+        consulta.setData(entrada.getData());
+        consulta.setHora(entrada.getHora());
+        consulta.setStatus(entrada.getStatus());
+        consulta.setPacienteId(pacienteOP.get());
+        repository.save(consulta);
+        return "Sucesso";
     }
 
     //true - DELETADO    false - NAO deletado
@@ -82,18 +95,22 @@ public class ConsultaService {
     }
 
     //retorna lista mesmo q vazia
-    public List<ConsultaDto> listarConsultas(){
+    public List<ConsultaDto> listarConsultas(Long pacienteId){
         List<ConsultaEntity> listaConsulta = repository.findAll();
         List<ConsultaDto> listaRetorno = new ArrayList<>();
 
         for (ConsultaEntity consulta : listaConsulta){
-            ConsultaDto retorno = new ConsultaDto();
-            retorno.setData(consulta.getData());
-            retorno.setId(consulta.getId());
-            retorno.setPacienteId(consulta.getPacienteId());
-            retorno.setStatus(consulta.getStatus());
-            retorno.setTitulo(consulta.getTitulo());
-            listaRetorno.add(retorno);
+            Long idPacienteConsulta = consulta.getPacienteId().getId();
+            if (pacienteId == null || pacienteId.equals(idPacienteConsulta)){
+                ConsultaDto retorno = new ConsultaDto();
+                retorno.setData(consulta.getData());
+                retorno.setHora(consulta.getHora());
+                retorno.setId(consulta.getId());
+                retorno.setPacienteId(idPacienteConsulta);
+                retorno.setStatus(consulta.getStatus());
+                retorno.setTitulo(consulta.getTitulo());
+                listaRetorno.add(retorno);
+            }
         }
         return listaRetorno;
     }

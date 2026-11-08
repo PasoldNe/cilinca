@@ -21,16 +21,16 @@ public class PacienteController {
     //http://localhost:8080/paciente
     @PostMapping
     public ResponseEntity<String> cadastrarPaciente(@RequestBody PacienteEntradaDto entrada){
-        //dados invalidos
-        if (service.cadastrarPaciente(entrada) == "dadosInvalidos"){
+        String metodo = service.cadastrarPaciente(entrada);
+        if (metodo.equals("dadosInvalidos")){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Dados invalidos :(");
         }
         //email ja cadastrado
-        if (service.cadastrarPaciente(entrada) == "emailCadastrado"){
-            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body("E-mail ja cadastrado :/");
+        if (metodo.equals("emailCadastrado")){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("E-mail ja cadastrado :/");
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(service.cadastrarPaciente(entrada));
+        return ResponseEntity.ok().body(metodo);
     }
 
     //http://localhost:8080/paciente
@@ -42,21 +42,30 @@ public class PacienteController {
 
     //http://localhost:8080/paciente/[email]
     @PutMapping("/{email}")
-    public ResponseEntity<String> atualizarCadastro(@RequestBody PacienteDto entrada , @PathVariable String email){
-        if (service.atualizarPaciente(entrada, email)){
-            return ResponseEntity.ok().body("Atualizado");
-        } else {
-            return ResponseEntity.badRequest().body("Nao encontrado");
+    public ResponseEntity<String> atualizarCadastro(@RequestBody PacienteEntradaDto entrada, @PathVariable String email){
+        String metodo = service.atualizarPaciente(entrada, email);
+        if (metodo.equals("dadosInvalidos")){
+            return ResponseEntity.badRequest().body("Dados invalidos :(");
         }
+        if (metodo.equals("emailCadastrado")){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email ja cadastrado a outro paciente :(");
+        }
+        if (metodo.equals("pacienteNaoEncontrado")){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Paciente nao encontrado");
+        }
+        return ResponseEntity.ok().body(metodo);
     }
 
     //http://localhost:8080/paciente/{email}
     @DeleteMapping("/{email}")
     public ResponseEntity<String> deletarUsuario(@PathVariable String email){
-        //chamar o service
-        if (service.deletarPaciente(email)){
-            return ResponseEntity.ok().body("Sucesso");
+        String metodo = service.deletarPaciente(email);
+        if (metodo.equals("pacienteNaoEncontrado")){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Paciente nao encontrado");
         }
-        return ResponseEntity.badRequest().body("Fracasso");
+        if (metodo.equals("pacienteVinculado")){
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Paciente possui consultas");
+        }
+        return ResponseEntity.ok().body(metodo);
     }
 }

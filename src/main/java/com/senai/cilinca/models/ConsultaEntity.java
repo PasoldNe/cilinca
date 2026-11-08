@@ -1,8 +1,8 @@
 package com.senai.cilinca.models;
 
 import jakarta.persistence.*;
-import com.senai.cilinca.models.PacienteEntity;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity
 public class ConsultaEntity {
@@ -17,9 +17,12 @@ public class ConsultaEntity {
     @Column(name = "titulo", nullable = false)
     private String titulo;
 
-    private Timestamp data;
+    @Column(nullable = false)
+    private LocalDate data;
 
-    //@GeneratedValue()//TODO -- Criar ja em AGENDADA
+    @Column(nullable = false)
+    private LocalTime hora;
+
     private String status;
 
     @ManyToOne(optional = false)
@@ -43,12 +46,20 @@ public class ConsultaEntity {
         this.titulo = titulo;
     }
 
-    public Timestamp getData() {
+    public LocalDate getData() {
         return data;
     }
 
-    public void setData(Timestamp data) {
+    public void setData(LocalDate data) {
         this.data = data;
+    }
+
+    public LocalTime getHora() {
+        return hora;
+    }
+
+    public void setHora(LocalTime hora) {
+        this.hora = hora;
     }
 
     public String getStatus() {
